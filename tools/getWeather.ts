@@ -1,43 +1,40 @@
-const API_KEY = '';
+import axios from 'axios';
+import Constants from 'expo-constants';
 
-export async function getWeather(location) {
-  const url = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(location)}&appid=${API_KEY}&units=metric`;
+export function getWeather(location: string) {
+  const apiKey = Constants.expoConfig?.extra?.openWeatherKey;
+
+  if (!apiKey) {
+    console.error('[getWeather] Missing OPENWEATHER_API_KEY in app.config.js');
+    return {
+      type: 'error',
+      message: 'Missing OpenWeather API key.'
+    };
+  }
 
   try {
-    const response = await fetch(url);
-    const data = await response.json();
+    const encodedLocation = encodeURIComponent(location);
+    const url = `https://api.openweathermap.org/data/2.5/weather?q=${encodedLocation}&appid=${apiKey}&units=metric`;
+    console.log('[getWeather] Requesting:', url);
 
-    if (data.cod !== 200) {
+    return axios.get(url).then((response) => {
+      console.log('[getWeather] Response received:', response.data);
+      const data = response.data;
       return {
-        answer: `Could not find weather for "${location}".`,
-        usedTool: 'getWeather',
-        preview: null
-      };
-    }
-
-    const temperature = data.main.temp.toFixed(1);
-    const description = data.weather[0].description;
-    const icon = data.weather[0].icon;
-    const high = data.main.temp_max.toFixed(1);
-    const low = data.main.temp_min.toFixed(1);
-
-    return {
-      answer: `The weather in ${data.name} is ${description} with a temperature of ${temperature}°C.`,
-      usedTool: 'getWeather',
-      preview: {
+        type: 'weatherCard',
         location: data.name,
-        temperature,
-        description,
-        high,
-        low,
-        icon
-      }
-    };
+        temperature: data.main.temp.toFixed(1),
+        high: data.main.temp_max.toFixed(1),
+        low: data.main.temp_min.toFixed(1),
+        description: data.weather[0].description,
+        icon: data.weather[0].icon,
+      };
+    });
   } catch (error) {
+    console.error('[getWeather] API error:', error);
     return {
-      answer: 'Failed to fetch weather data.',
-      usedTool: 'getWeather',
-      preview: null
+      type: 'error',
+      message: 'Could not fetch weather data. Please try again.'
     };
   }
 }

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import Markdown from 'react-native-markdown-display';
+import { theme } from '../../lib/theme';
 
 interface ComponentPreviewProps {
   code: string;
@@ -67,9 +68,11 @@ const styles = StyleSheet.create({
     color: '#d00',
     marginBottom: 8,
     fontSize: 14,
+    fontFamily: theme.fonts.primary,
   },
   loadingText: {
     fontSize: 16,
     color: '#888',
+    fontFamily: theme.fonts.primary,
   },
 });

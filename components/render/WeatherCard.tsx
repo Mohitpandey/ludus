@@ -1,74 +1,76 @@
 import React from 'react';
-import { View, Text, StyleSheet, Image } from 'react-native';
-import { colors, spacing, radii } from '../../lib/theme';
+import { View, Text, Image, StyleSheet } from 'react-native';
+import { theme } from '../../lib/theme';
 
-export default function WeatherCard({ location, temperature, description, high, low, icon }) {
-  const iconUrl = icon
-    ? `https://openweathermap.org/img/wn/${icon}@2x.png`
-    : null;
+interface WeatherCardProps {
+  temperature: number;
+  condition: string;
+  high: number;
+  low: number;
+  iconUrl: string;
+  location: string;
+}
 
+const WeatherCard: React.FC<WeatherCardProps> = ({
+  temperature,
+  condition,
+  high,
+  low,
+  iconUrl,
+  location,
+}) => {
   return (
-    <View style={styles.container}>
-      <View style={styles.card}>
-        <Text style={styles.city}>{location}</Text>
-        {iconUrl && (
-          <Image
-            source={{ uri: iconUrl }}
-            style={styles.icon}
-            resizeMode="contain"
-          />
-        )}
-        <Text style={styles.temp}>{temperature}°</Text>
-        <Text style={styles.desc}>{description}</Text>
-        <Text style={styles.hilo}>H {high}°   L {low}°</Text>
+    <View style={styles.card}>
+      <View style={styles.inner}>
+        <Image source={{ uri: iconUrl }} style={styles.icon} />
+        <View style={styles.info}>
+          <Text style={styles.temp}>{Math.round(temperature)}°</Text>
+          <Text style={styles.hilo}>
+            H {Math.round(high)}°  L {Math.round(low)}°
+          </Text>
+        </View>
       </View>
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
-  container: {
-    alignItems: 'flex-start',
-    marginBottom: 8,
-  },
   card: {
-    width: 240,
-    borderRadius: 24,
-    paddingVertical: 20,
-    paddingHorizontal: 16,
-    backgroundColor: '#e1f0ff',
+    backgroundColor: '#338CFF',
+    borderRadius: 40,
+    width: 300,
+    height: 130,
+    justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
     shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: 1 },
-    shadowRadius: 3,
-    elevation: 2,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+  },
+  inner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 20,
   },
   icon: {
-    width: 60,
-    height: 60,
-    marginVertical: 6,
+    width: 72,
+    height: 72,
   },
-  city: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#003366',
-    marginBottom: 4,
+  info: {
+    justifyContent: 'center',
   },
   temp: {
-    fontSize: 46,
-    fontWeight: 'bold',
-    color: '#003366',
-  },
-  desc: {
-    fontSize: 16,
-    color: '#1f1f1f',
-    marginVertical: 4,
-    textTransform: 'capitalize',
+    fontSize: 56,
+    fontWeight: '600',
+    color: '#fff',
+    fontFamily: theme.fonts.primary,
   },
   hilo: {
-    fontSize: 14,
-    color: '#444',
-    marginTop: 4,
+    fontSize: 20,
+    color: '#F5F5F5',
+    marginTop: 2,
+    fontFamily: theme.fonts.primary,
   },
 });
+
+export default WeatherCard;

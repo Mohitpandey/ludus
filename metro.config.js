@@ -2,7 +2,7 @@ const { getDefaultConfig } = require('@expo/metro-config');
 const path = require('path');
 
 const config = getDefaultConfig(__dirname);
-
+console.log(config);
 config.watchFolders = [
   path.resolve(__dirname, 'apps'),
   path.resolve(__dirname, 'components'),

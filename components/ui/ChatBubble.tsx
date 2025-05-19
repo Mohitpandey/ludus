@@ -1,66 +1,89 @@
-
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import ReactMarkdown from 'react-markdown';
+import WeatherCard from '../render/WeatherCard';
+import ComponentPreview from '../render/ComponentPreview';
 import { theme } from '../../lib/theme';
 
-interface ChatBubbleProps {
-  message: {
-    role: 'user' | 'ludus';
-    message: string;
-  };
+interface WeatherCardProps {
+  temperature: number;
+  condition: string;
+  high: number;
+  low: number;
+  iconUrl: string;
+  location: string;
 }
 
-const ChatBubble: React.FC<ChatBubbleProps> = ({ message }) => {
-  if (!message || typeof message !== 'object') {
-    console.warn('[ChatBubble] Invalid message:', message);
-    return null;
-  }
+export interface Message {
+  role: 'user' | 'assistant';
+  content?: string;
+  component?: {
+    type: 'weatherCard' | 'generated';
+    code: string;
+  } & Partial<WeatherCardProps>;
+}
 
+export default function ChatBubble({ message }: { message: Message }) {
   const isUser = message.role === 'user';
 
+  const renderComponent = () => {
+    if (!message.component) return null;
+
+    if (message.component.type === 'weatherCard') {
+      return <WeatherCard {...message.component as WeatherCardProps} />;
+    }
+
+    if (message.component.type === 'generated' && message.component.code) {
+      return <ComponentPreview code={message.component.code} />;
+    }
+
+    return null;
+  };
+
   return (
-    <View
-      style={[
-        styles.bubble,
-        {
-          backgroundColor: isUser ? theme.colors.secondary : theme.colors.primaryLight,
-          alignSelf: isUser ? 'flex-end' : 'flex-start',
-        },
-      ]}
-    >
-      <ReactMarkdown
-        components={{
-          p: ({ children }) => <Text style={styles.text}>{children}</Text>,
-          strong: ({ children }) => <Text style={[styles.text, styles.bold]}>{children}</Text>,
-          em: ({ children }) => <Text style={[styles.text, styles.italic]}>{children}</Text>,
-          li: ({ children }) => <Text style={styles.text}>• {children}</Text>,
-        }}
-      >
-        {message.message || '...'}
-      </ReactMarkdown>
+    <View style={[styles.bubble, isUser ? styles.user : styles.assistant]}>
+      {message.content ? (
+        <ReactMarkdown
+          children={message.content}
+          components={{
+            p: ({ children }) => <Text style={styles.text}>{children}</Text>,
+            strong: ({ children }) => (
+              <Text style={[styles.text, { fontWeight: 'bold' }]}>{children}</Text>
+            ),
+            em: ({ children }) => (
+              <Text style={[styles.text, { fontStyle: 'italic' }]}>{children}</Text>
+            ),
+            code: ({ children }) => (
+              <Text style={[styles.text, { fontFamily: 'monospace' }]}>{children}</Text>
+            ),
+          }}
+        />
+      ) : null}
+      {renderComponent()}
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   bubble: {
-    marginVertical: 6,
-    padding: 12,
-    borderRadius: 10,
-    maxWidth: '80%',
+    borderRadius: theme.radii.lg,
+    padding: theme.spacing.md,
+    marginVertical: theme.spacing.xs,
+    maxWidth: '75%',
+  },
+  user: {
+    alignSelf: 'flex-end',
+    backgroundColor: theme.colors.chatBubbleUser,
+  },
+  assistant: {
+    alignSelf: 'flex-start',
+    backgroundColor: theme.colors.background,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
   },
   text: {
-    color: theme.colors.textPrimary || '#232F34',
-    fontSize: 15,
-    lineHeight: 22,
-  },
-  bold: {
-    fontWeight: 'bold',
-  },
-  italic: {
-    fontStyle: 'italic',
+    color: '#FFFFFF',
+    fontSize: 16,
+    lineHeight: 24,
   },
 });
-
-export default ChatBubble;

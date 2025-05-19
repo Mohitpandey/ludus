@@ -1,0 +1,44 @@
+[file:apps/web/App.tsx]
+description = Main entry point of the Ludus web app. Initializes the UI, sets up routing, and renders the chat interface.
+
+[file:components/ui/ChatBubble.tsx]
+description = Component to display individual chat messages. Applies different styles based on sender (user or assistant) and handles markdown rendering.
+
+[file:components/ui/ChatInput.tsx]
+description = Handles the user input area. Allows users to enter and submit messages.
+
+[file:components/render/ComponentPreview.tsx]
+description = Renders JSX UI components returned from the LLM. Evaluates the JSX and displays the resulting UI in the chat.
+
+[file:lib/theme.ts]
+description = Defines the application-wide design system including color palettes, spacing, and font sizes.
+
+[file:services/componentGenerator.ts]
+description = Converts LLM tool_call results into rendered UI components using predefined templates.
+
+[file:services/componentRouter.ts]
+description = Parses LLM responses, identifies tool_calls, and dispatches them to corresponding service handlers.
+
+[file:tools/getWeather.ts]
+description = Handles fetching weather data from the OpenWeather API and formatting it into a UI-friendly object.
+
+[file:tools/ollamaClient.ts]
+description = Handles local interaction with the Ollama language model API, including message sending and response parsing.
+
+[file:agents/ludusAgent.ts]
+description = The configuration for the Ludus AI assistant, including system prompts and tool registration.
+
+[file:utils/extractJson.ts]
+description = Utility to extract valid JSON blocks from LLM responses, used for safely parsing tool_call content.
+
+[file:metro.config.js]
+description = Metro bundler configuration file, required for asset handling in Expo and React Native environments.
+
+[file:package.json]
+description = Defines the project's dependencies, scripts, and metadata for npm/yarn.
+
+[file:.gitignore]
+description = Specifies intentionally untracked files to ignore when committing to git.
+
+[file:.env]
+description = Stores environment variables such as API keys that should not be checked into version control.

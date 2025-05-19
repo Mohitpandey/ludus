@@ -1,74 +1,69 @@
-
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, FlatList } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { Message } from '../../components/ui/ChatBubble';
+import { View, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
+import ChatView from '../../components/ui/ChatView';
 import ChatInput from '../../components/ui/ChatInput';
-import ChatBubble from '../../components/ui/ChatBubble';
 import { askLudus } from '../../services/componentRouter';
-import { theme } from '../../lib/theme';
 
 export default function App() {
-  const [messages, setMessages] = useState([
-    { id: '1', role: 'ludus', message: "Hi! I'm Ludus. Ask me anything about weather, UI components, or general questions." }
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
+
+  useEffect(() => {
+    const initialMessage: Message = {
+      role: 'assistant',
+      content: "Hi, I'm Ludus. Ask me anything or request a UI component!",
+    };
+    setMessages([initialMessage]);
+  }, []);
 
   const handleSend = async (text: string) => {
-    if (!text.trim()) return;
-
-    const userMessage = { id: Date.now().toString(), role: 'user', message: text };
-    setMessages(prev => [...prev, userMessage]);
+    const userMessage: Message = { role: 'user', content: text };
+    const newMessages: Message[] = [...messages, userMessage];
+    setMessages(newMessages);
 
     try {
-      const result = await askLudus(text);
-      const assistantMessage = {
-        id: (Date.now() + 1).toString(),
-        role: 'ludus',
-        message: result?.message || result?.answer || JSON.stringify(result)
-      };
-      setMessages(prev => [...prev, assistantMessage]);
+      const result = await askLudus(text, newMessages, 'gemma3:27b');
+
+      if (result?.content || result?.preview) {
+        const responseMessage: Message = {
+          role: 'assistant',
+          content: result.content || '',
+          component: result.preview && {
+            type: (result.preview.type === 'weatherCard' || result.preview.type === 'generated') 
+              ? result.preview.type 
+              : 'generated',
+            code: typeof result.preview.code === 'string' ? result.preview.code : '',
+            ...(result.preview as any)
+          },
+        };
+        setMessages((prev) => [...prev, responseMessage]);
+      }
     } catch (error) {
-      setMessages(prev => [...prev, {
-        id: (Date.now() + 2).toString(),
-        role: 'ludus',
-        message: 'Something went wrong.'
-      }]);
+      console.error('[ERROR] askLudus failed:', error);
     }
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.chatBox}>
-        <Text style={styles.header}>Ludus</Text>
-        <FlatList
-          data={messages.filter((m) => m && m.role && m.message)}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => <ChatBubble message={item} />}
-          contentContainerStyle={{ paddingBottom: 80 }}
-        />
+    <View style={styles.wrapper}>
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={80}
+      >
+        <ChatView messages={messages} />
         <ChatInput onSend={handleSend} />
-      </View>
-    </SafeAreaView>
+      </KeyboardAvoidingView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  wrapper: {
+    flex: 1,
+    backgroundColor: '#111',
+  },
   container: {
     flex: 1,
-    backgroundColor: theme.colors.background,
-    justifyContent: 'center',
     alignItems: 'center',
-  },
-  chatBox: {
-    flex: 1,
-    width: '100%',
-    maxWidth: 720,
-    padding: 16,
-    justifyContent: 'flex-end',
-  },
-  header: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: theme.colors.primary,
-    textAlign: 'center',
-    marginBottom: 12,
   },
 });
